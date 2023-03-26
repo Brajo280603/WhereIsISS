@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- for PWA this is required , generate it with emmet-->
+    <link rel="stylesheet" href="./style.css"> <!--adding stylesheets-->
+    <link rel="manifest" href="./manifest.json"><!--adding manifest (required for PWA)-->
+    <meta name="theme-color" content="#161616"/><!--theme-color (required for PWA) : Used for the color of the menubar in chrome desktop and mobile and notification bar in PWA mode-->
+    <link rel="apple-touch-icon" href="./img/apple_touch_icon.png"><!--required for PWA to be installable on IOS devices : need to be  a non-transparent 192px (or 180px) square PNG-->
+    <title>Where ISS</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+</head>
+<body style="background-color: #161616; color: white;margin: 0;padding: 0;">
+    <div style="background-color: #2e2e2e;padding-left: 10px;padding-top: 2px;padding-bottom: 2px;">
+        <h1>Where is the ISS</h1>
+    </div>
+
+    <div style="padding:5px">
+        <p>latitude :  <span id="lat" ></span></p>
+        <p>longitude : <span id="lon"></span></p>
+    
+        <div id="ISSdiv" style="height:50vh"></div>
+    </div>
+
+
+    <script>
+        let ISSmap = L.map('ISSdiv').setView([0,0], 2);
+
+        var myIcon = L.icon({
+            iconUrl: 'ISSicon.svg',
+            iconSize: [50, 50],
+            iconAnchor: [25, 25]
+        });
+
+
+        let marker = L.marker([0,0], {icon:myIcon}).addTo(ISSmap);
+        
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(ISSmap);
+
+
+        let first = true;
+        const ISS_api_url = 'https://api.wheretheiss.at/v1/satellites/25544';
+            async function getISS(){
+                let response = await fetch(ISS_api_url);
+                let data = await response.json();
+                console.log(data);
+                let {longitude,latitude} = data;
+                console.log(latitude,longitude); 
+
+                marker.setLatLng([latitude,longitude]);
+
+                if(first){
+                    ISSmap.setView([latitude,longitude],4);
+                    first = false;
+                }
+                
+
+                document.getElementById('lat').textContent = latitude.toFixed(2);
+                document.getElementById('lon').textContent = longitude.toFixed(2);
+            }
+
+            setInterval(getISS,1000);
+        
+
+    </script>
+      <script src="main.js"></script> <!--adding our js script-->
+</body>
+</html>
